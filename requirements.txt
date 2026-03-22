@@ -3,4 +3,5 @@ Flask-MySQLdb==2.0.0
 Werkzeug==3.0.4
 mysqlclient==2.2.4
 Pillow==10.4.0
+gunicorn==21.2.0
 python-dotenv==1.0.1
