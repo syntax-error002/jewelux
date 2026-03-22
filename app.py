@@ -36,9 +36,6 @@ class Pagination:
 
 app = Flask(__name__)
 app.config.from_object(config['development'])
-app.config['MYSQL_PASSWORD']='Rishi@2207'
-# ── Hardcoded DB credentials (edit here if your password changes) ──
-app.config['MYSQL_PASSWORD'] = 'Rishi@2207'
 # ──────────────────────────────────────────────────────────────────
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -999,6 +996,13 @@ def admin_users():
     cur.close()
     users = Pagination(users_list, page, per_page, total)
     return render_template("admin/users.html", users=users)
+@app.route('/test')
+def test():
+    return {
+        "host": os.environ.get("MYSQL_HOST"),
+        "user": os.environ.get("MYSQL_USER"),
+        "db": os.environ.get("MYSQL_DB")
+    }
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
