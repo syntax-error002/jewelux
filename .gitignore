@@ -1,0 +1,6 @@
+.env
+__pycache__/
+*.pyc
+error.log
+error.txt
+test_db.py

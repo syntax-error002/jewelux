@@ -1,4 +1,7 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'jewelux-secret-key-change-in-production-2024')
@@ -6,7 +9,7 @@ class Config:
     # MySQL config
     MYSQL_HOST = os.environ.get('MYSQL_HOST', 'localhost')
     MYSQL_USER = os.environ.get('MYSQL_USER', 'root')
-    MYSQL_PASSWORD = 'Rishi@2207'
+    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', 'Rishi@2207')
     MYSQL_DB = os.environ.get('MYSQL_DB', 'jewelux')
     MYSQL_CURSORCLASS = 'DictCursor'
     
