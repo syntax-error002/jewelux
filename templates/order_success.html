@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Order Confirmed — JEWELUX{% endblock %}
+{% block header_class %}solid{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--header-h)+3rem);padding-bottom:5rem;text-align:center;">
+  <div class="container" style="max-width:600px;">
+    <div style="font-size:4rem;margin-bottom:1.5rem;animation:fadeInUp .6s ease;">✓</div>
+    <p class="section-label">Thank You!</p>
+    <h1 style="font-family:var(--font-serif);font-size:3rem;margin-bottom:1rem;">Order <em style="font-style:italic;color:var(--gold);">Confirmed</em></h1>
+    <div class="gold-divider" style="justify-content:center;max-width:300px;margin:1rem auto 2rem;"><div class="diamond"></div></div>
+
+    <div style="background:var(--black-card);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:2rem;margin-bottom:2rem;">
+      <div style="font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem;">Order Number</div>
+      <div style="font-family:var(--font-serif);font-size:1.8rem;color:var(--ivory);">{{ order.order_number }}</div>
+      <div style="font-size:.8rem;color:var(--gray-dim);margin-top:.5rem;">Confirmation sent to {{ order.shipping_email }}</div>
+    </div>
+
+    <p style="color:var(--gray-dim);font-size:.9rem;line-height:1.9;margin-bottom:2rem;">
+      Your exquisite jewellery is being carefully prepared for dispatch. You will receive tracking details via email within 24 hours.
+    </p>
+
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+      <a href="{{ url_for('my_orders') }}" class="btn btn-gold">View My Orders</a>
+      <a href="{{ url_for('shop') }}" class="btn btn-outline">Continue Shopping</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

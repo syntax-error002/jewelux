@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% block title %}JEWELUX — Exquisite Luxury Jewellery{% endblock %}
+ 
+{% macro product_card(p, wishlist_ids=[]) %}
+{% set price = p.sale_price if p.sale_price else p.price %}
+<div class="product-card">
+  <div class="product-image-wrap">
+    {% if p.image %}
+      <img class="product-img" src="{{ img_url(p.image) }}" alt="{{ p.name }}" loading="lazy">
+    {% else %}
+      <div class="product-image-placeholder">
+        <span class="jewel-icon">💎</span>
+        <span class="jewel-label">{{ p.category_name or 'Jewellery' }}</span>
+      </div>
+    {% endif %}
+    <div class="product-badges">
+      {% if p.sale_price %}<span class="badge badge-sale">Sale</span>{% endif %}
+      {% if p.stock < 5 and p.stock > 0 %}<span class="badge badge-low">Only {{ p.stock }} left</span>{% endif %}
+      {% if p.stock == 0 %}<span class="badge badge-out">Sold Out</span>{% endif %}
+    </div>
+    <div class="product-actions">
+      <a href="{{ url_for('product_detail', slug=p.slug) }}" class="btn btn-gold btn-sm" style="flex:1;justify-content:center;">View Details</a>
+      {% if session.get('user_id') %}
+      <button class="wishlist-btn {% if p.id in wishlist_ids %}active{% endif %}"
+              data-product-id="{{ p.id }}" title="Wishlist">
+        {{ '♥' if p.id in wishlist_ids else '♡' }}
+      </button>
+      {% endif %}
+    </div>
+  </div>
+  <div class="product-info">
+    <p class="product-category">{{ p.category_name or 'Fine Jewellery' }}</p>
+    <h3 class="product-name"><a href="{{ url_for('product_detail', slug=p.slug) }}">{{ p.name }}</a></h3>
+    <div class="product-price-wrap">
+      <span class="product-price">₹{{ '{:,.0f}'.format(price) }}</span>
+      {% if p.sale_price %}<span class="product-price-original">₹{{ '{:,.0f}'.format(p.price) }}</span>{% endif %}
+    </div>
+    {% if p.material %}<p class="product-material">{{ p.material }}</p>{% endif %}
+  </div>
+</div>
+{% endmacro %}
+ 
+{% block content %}
+ 
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg" style="background-image:url('https://images.unsplash.com/photo-1506630268382-8197fce77e07?w=1600&q=80&fit=crop');background-size:cover;background-position:center;"></div>
+  <div class="hero-grid-overlay"></div>
+  <div class="hero-jewel hero-jewel-1"></div>
+  <div class="hero-jewel hero-jewel-2"></div>
+  <div class="hero-jewel hero-jewel-3"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">✦ The Art of Fine Jewellery ✦</p>
+    <h1 class="hero-title">Where Luxury <em>Meets Legacy</em></h1>
+    <p class="hero-subtitle">Handcrafted jewellery that transcends time. Discover our curated collection of diamonds, gold, and precious gemstones.</p>
+    <div class="hero-cta">
+      <a href="{{ url_for('shop') }}" class="btn btn-gold btn-lg">Explore Collection</a>
+      <a href="{{ url_for('shop', category='sets') }}" class="btn btn-ghost btn-lg">Bridal Sets</a>
+    </div>
+  </div>
+  <div class="hero-scroll"><span>Scroll</span></div>
+</section>
+ 
+<!-- MARQUEE -->
+<div style="background:linear-gradient(90deg,var(--gold-dark),var(--gold),var(--gold-dark));padding:.7rem 0;overflow:hidden;">
+  <div style="display:flex;gap:3rem;white-space:nowrap;animation:marquee 20s linear infinite;font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;color:var(--black);font-family:var(--font-sans);font-weight:400;">
+    <span>✦ Free Shipping on Orders Above ₹10,000</span><span>✦ BIS Hallmarked Gold</span><span>✦ Certified Diamonds & Gemstones</span><span>✦ 30-Day Easy Returns</span><span>✦ Lifetime Polishing Service</span>
+    <span>✦ Free Shipping on Orders Above ₹10,000</span><span>✦ BIS Hallmarked Gold</span><span>✦ Certified Diamonds & Gemstones</span><span>✦ 30-Day Easy Returns</span><span>✦ Lifetime Polishing Service</span>
+  </div>
+</div>
+<style>@keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }</style>
+ 
+<!-- CATEGORIES -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-label">Browse by Collection</p>
+      <h2 class="section-title">Our <em>Collections</em></h2>
+      <div class="gold-divider"><div class="diamond"></div></div>
+    </div>
+    <div class="categories-grid">
+      {% set cat_images = {
+        'rings':     'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&q=80&fit=crop',
+        'necklaces': 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&q=80&fit=crop',
+        'earrings':  'https://images.unsplash.com/photo-1630358949869-b8fd3d05c9f5?w=600&q=80&fit=crop',
+        'bracelets': 'https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=600&q=80&fit=crop',
+        'bangles':   'https://images.unsplash.com/photo-1601821765780-754fa98637c1?w=600&q=80&fit=crop',
+        'sets':      'https://tse4.mm.bing.net/th/id/OIP.RJO6CfaSLIDxio46_D1EbQHaFi?rs=1&pid=ImgDetMain&o=7&rm=3'
+      } %}
+      {% for cat in categories %}
+      <a href="{{ url_for('shop', category=cat.slug) }}" class="category-card">
+        <div class="category-card-bg" style="background-image:url('{{ cat_images.get(cat.slug, '') }}');background-size:cover;background-position:center;"></div>
+        <div class="category-card-overlay"></div>
+        <div class="category-card-content">
+          <div class="category-card-name">{{ cat.name }}</div>
+          <div class="category-card-count">Shop now →</div>
+        </div>
+        <div class="category-card-border"></div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+ 
+<!-- FEATURED PRODUCTS -->
+<section class="section" style="background:var(--black-soft);border-top:1px solid rgba(201,168,76,.06);border-bottom:1px solid rgba(201,168,76,.06);">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-label">Handpicked for You</p>
+      <h2 class="section-title">Featured <em>Pieces</em></h2>
+      <div class="gold-divider"><div class="diamond"></div></div>
+      <p style="color:var(--gray-dim);max-width:500px;margin:.5rem auto 0;font-size:.9rem;">Each piece selected for its exceptional craftsmanship, beauty, and timeless appeal.</p>
+    </div>
+    <div class="products-grid">
+      {% for p in featured %}{{ product_card(p, wishlist_ids) }}{% endfor %}
+    </div>
+    <div style="text-align:center;margin-top:3rem;">
+      <a href="{{ url_for('shop') }}" class="btn btn-outline btn-lg">View All Jewellery</a>
+    </div>
+  </div>
+</section>
+ 
+<!-- VALUE PROPS -->
+<section class="section">
+  <div class="container">
+    <div class="props-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:2rem;text-align:center;">
+      {% set props = [
+        ('💎','Certified Quality','All our gemstones and gold are certified and hallmarked for authenticity.'),
+        ('🚚','Free Delivery','Complimentary insured shipping on all orders above ₹10,000.'),
+        ('🔄','Easy Returns','30-day hassle-free return policy with full refund guarantee.'),
+        ('🔒','Secure Payment','Bank-grade security for all transactions. Your data is protected.'),
+      ] %}
+      {% for icon, title, desc in props %}
+      <div style="padding:2rem;background:var(--black-card);border:1px solid rgba(255,255,255,.05);border-radius:8px;transition:var(--transition);" onmouseover="this.style.borderColor='rgba(201,168,76,.2)'" onmouseout="this.style.borderColor='rgba(255,255,255,.05)'">
+        <div style="font-size:2.2rem;margin-bottom:1rem;">{{ icon }}</div>
+        <h3 style="font-family:var(--font-serif);font-size:1.2rem;margin-bottom:.5rem;color:var(--ivory);">{{ title }}</h3>
+        <p style="font-size:.82rem;color:var(--gray-dim);line-height:1.7;">{{ desc }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+ 
+<!-- NEW ARRIVALS -->
+{% if new_arrivals %}
+<section class="section" style="background:var(--black-soft);border-top:1px solid rgba(201,168,76,.06);">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-label">Just Arrived</p>
+      <h2 class="section-title">New <em>Arrivals</em></h2>
+      <div class="gold-divider"><div class="diamond"></div></div>
+    </div>
+    <div class="products-grid products-grid-4">
+      {% for p in new_arrivals %}{{ product_card(p) }}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+ 
+<!-- TESTIMONIALS -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-label">Our Beloved Clients</p>
+      <h2 class="section-title">Loved by <em>Thousands</em></h2>
+      <div class="gold-divider"><div class="diamond"></div></div>
+    </div>
+    <div class="testimonials-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:2rem;">
+      {% set reviews = [
+        ('Priya S.','Mumbai','★★★★★','The diamond ring I ordered was absolutely breathtaking. The craftsmanship is exceptional and it arrived beautifully packaged. Will definitely shop again!'),
+        ('Anika R.','Delhi','★★★★★','I bought the golden cascade necklace for my mother\'s anniversary. She was in tears! The quality is far beyond what I expected at this price point.'),
+        ('Meera K.','Bangalore','★★★★★','The bridal set was exactly what I dreamed of. Customer service was outstanding and delivery was faster than expected. JEWELUX is my go-to for fine jewellery.'),
+      ] %}
+      {% for name, city, stars, review in reviews %}
+      <div style="background:var(--black-card);border:1px solid rgba(201,168,76,.1);border-radius:8px;padding:2rem;position:relative;">
+        <div style="position:absolute;top:-1px;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);border-radius:8px 8px 0 0;"></div>
+        <div style="color:var(--gold);font-size:1rem;margin-bottom:1rem;letter-spacing:.1em;">{{ stars }}</div>
+        <p style="font-family:var(--font-serif);font-size:1rem;color:var(--ivory);line-height:1.8;margin-bottom:1.2rem;font-style:italic;">"{{ review }}"</p>
+        <div style="display:flex;align-items:center;gap:.75rem;">
+          <div style="width:36px;height:36px;background:linear-gradient(135deg,var(--gold-dark),var(--gold));border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:1rem;color:var(--black);">{{ name[0] }}</div>
+          <div>
+            <div style="font-size:.85rem;color:var(--ivory);">{{ name }}</div>
+            <div style="font-size:.7rem;color:var(--gray-dim);letter-spacing:.1em;text-transform:uppercase;">{{ city }}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+ 
+{% endblock %}
+ 

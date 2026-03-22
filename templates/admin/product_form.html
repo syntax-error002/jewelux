@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Edit' if product else 'Add' }} Product — Admin — JEWELUX{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+  <div class="container-fluid">
+    <div class="admin-layout">
+
+      <aside class="admin-sidebar">
+        <div class="admin-brand"><span class="brand-mark">◈</span><span>Admin Panel</span></div>
+        <nav class="admin-nav">
+          <a href="{{ url_for('admin_index') }}"><span>◈</span> Dashboard</a>
+          <a href="{{ url_for('admin_products') }}" class="active"><span>◎</span> Products</a>
+          <a href="{{ url_for('admin_orders') }}"><span>◉</span> Orders</a>
+          <a href="{{ url_for('admin_users') }}"><span>◎</span> Users</a>
+          <hr class="nav-divider">
+          <a href="{{ url_for('index') }}"><span>↗</span> View Store</a>
+          <a href="{{ url_for('logout') }}" class="logout-link"><span>→</span> Sign Out</a>
+        </nav>
+      </aside>
+
+      <main class="admin-main">
+        <div class="admin-topbar">
+          <div>
+            <a href="{{ url_for('admin_products') }}" class="back-link">← Back to Products</a>
+            <h1>{{ 'Edit Product' if product else 'Add New Product' }}</h1>
+          </div>
+        </div>
+
+        <form method="POST"
+              action="{{ url_for('admin_edit_product', product_id=product.id) if product else url_for('admin_add_product') }}"
+              enctype="multipart/form-data"
+              class="product-form">
+
+          <div class="product-form-grid">
+
+            <!-- Left: Details -->
+            <div class="form-section">
+              <div class="admin-card">
+                <h2>Product Information</h2>
+
+                <div class="form-group">
+                  <label>Product Name <span class="required">*</span></label>
+                  <input type="text" name="name" class="form-control"
+                         value="{{ product.name if product else '' }}" required
+                         placeholder="e.g. Diamond Solitaire Ring">
+                </div>
+
+                <div class="form-group">
+                  <label>Description <span class="required">*</span></label>
+                  <textarea name="description" class="form-control" rows="5" required
+                            placeholder="Describe the product in detail…">{{ product.description if product else '' }}</textarea>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Price (₹) <span class="required">*</span></label>
+                    <input type="number" name="price" class="form-control" step="0.01" min="0"
+                           value="{{ product.price if product else '' }}" required>
+                  </div>
+                  <div class="form-group">
+                    <label>Original Price (₹)</label>
+                    <input type="number" name="original_price" class="form-control" step="0.01" min="0"
+                           value="{{ product.original_price if product and product.original_price else '' }}"
+                           placeholder="For sale strike-through">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Category <span class="required">*</span></label>
+                    <select name="category_id" class="form-control" required>
+                      <option value="">Select category</option>
+                      {% for cat in categories %}
+                      <option value="{{ cat.id }}"
+                        {% if product and product.category_id == cat.id %}selected{% endif %}>
+                        {{ cat.name }}
+                      </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Stock Quantity <span class="required">*</span></label>
+                    <input type="number" name="stock" class="form-control" min="0"
+                           value="{{ product.stock if product else 1 }}" required>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Material</label>
+                    <input type="text" name="material" class="form-control"
+                           value="{{ product.material if product else '' }}"
+                           placeholder="e.g. 18K Gold, Platinum">
+                  </div>
+                  <div class="form-group">
+                    <label>Weight</label>
+                    <input type="text" name="weight" class="form-control"
+                           value="{{ product.weight if product else '' }}"
+                           placeholder="e.g. 5.2g">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Gemstone</label>
+                    <input type="text" name="gemstone" class="form-control"
+                           value="{{ product.gemstone if product else '' }}"
+                           placeholder="e.g. Diamond, Ruby">
+                  </div>
+                  <div class="form-group">
+                    <label>SKU</label>
+                    <input type="text" name="sku" class="form-control"
+                           value="{{ product.sku if product else '' }}"
+                           placeholder="e.g. JWL-RNG-001">
+                  </div>
+                </div>
+
+                <div class="form-row checkboxes">
+                  <label class="checkbox-label">
+                    <input type="checkbox" name="is_featured" value="1"
+                           {% if product and product.is_featured %}checked{% endif %}>
+                    <span>Mark as Featured</span>
+                  </label>
+                  <label class="checkbox-label">
+                    <input type="checkbox" name="is_active" value="1"
+                           {% if not product or product.is_active %}checked{% endif %}>
+                    <span>Active (visible in shop)</span>
+                  </label>
+                  <label class="checkbox-label">
+                    <input type="checkbox" name="is_new_arrival" value="1"
+                           {% if product and product.is_new_arrival %}checked{% endif %}>
+                    <span>New Arrival</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Images -->
+            <div class="form-section">
+              <div class="admin-card">
+                <h2>Product Images</h2>
+
+                {% if product and product.images %}
+                <div class="existing-images">
+                  <p class="form-hint">Existing images (click × to delete)</p>
+                  <div class="image-grid">
+                    {% for img in product.images %}
+                    <div class="image-item" id="img-{{ img.id }}">
+                      <img src="{{ img_url(img.image_path) }}" alt="">
+                      {% if img.is_primary %}<span class="primary-badge">Primary</span>{% endif %}
+                      <button type="button" class="img-delete-btn"
+                              onclick="deleteImage({{ img.id }})">✕</button>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+                {% endif %}
+
+                <div class="upload-zone" id="uploadZone">
+                  <div class="upload-icon">↑</div>
+                  <p>Drag & drop images here</p>
+                  <p class="form-hint">or click to browse</p>
+                  <input type="file" name="images" id="imageInput" multiple accept="image/*"
+                         class="file-input-hidden">
+                </div>
+
+                <div id="imagePreview" class="image-preview-grid"></div>
+
+                <p class="form-hint mt-sm">First image will be set as primary. Max 5 images. JPG, PNG, WebP.</p>
+              </div>
+
+              <div class="form-actions">
+                <a href="{{ url_for('admin_products') }}" class="btn btn-ghost">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                  {{ 'Update Product' if product else 'Add Product' }}
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </form>
+      </main>
+    </div>
+  </div>
+</section>
+
+<script>
+// Upload zone click
+const zone = document.getElementById('uploadZone');
+const input = document.getElementById('imageInput');
+zone.addEventListener('click', () => input.click());
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('drag-over');
+  input.files = e.dataTransfer.files;
+  showPreviews(e.dataTransfer.files);
+});
+input.addEventListener('change', () => showPreviews(input.files));
+
+function showPreviews(files) {
+  const preview = document.getElementById('imagePreview');
+  preview.innerHTML = '';
+  Array.from(files).forEach((file, i) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const div = document.createElement('div');
+      div.className = 'preview-item';
+      div.innerHTML = `<img src="${e.target.result}" alt=""><span class="preview-label">${i === 0 ? 'Primary' : `Image ${i+1}`}</span>`;
+      preview.appendChild(div);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function deleteImage(id) {
+  if (!confirm('Delete this image?')) return;
+  fetch(`/admin/products/image/${id}/delete`, { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById(`img-${id}`).remove();
+      }
+    });
+}
+</script>
+{% endblock %}

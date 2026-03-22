@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% block title %}Shop — JEWELUX{% endblock %}
+{% block header_class %}solid{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <p class="section-label">Our Complete Collection</p>
+    <h1 class="page-hero-title">Fine <em style="font-style:italic;color:var(--gold);">Jewellery</em></h1>
+    <div class="gold-divider" style="justify-content:center;max-width:300px;margin:1rem auto;"><div class="diamond"></div></div>
+    <p style="color:var(--gray-dim);font-size:.9rem;">{{ total }} pieces available</p>
+  </div>
+</div>
+
+<div class="container" style="padding-bottom:5rem;">
+  <div class="breadcrumb">
+    <a href="{{ url_for('index') }}">Home</a>
+    <span class="breadcrumb-sep">✦</span>
+    <span class="breadcrumb-current">Shop{% if category %} — {{ category.title() }}{% endif %}</span>
+  </div>
+
+  <div class="shop-layout">
+    <!-- Sidebar Filters -->
+    <aside class="shop-sidebar">
+      <div class="filter-card">
+        <p class="filter-title">Collections</p>
+        <div class="filter-options">
+          <a href="{{ url_for('shop', sort=sort, min_price=min_price, max_price=max_price) }}"
+             class="filter-option {% if not category %}active{% endif %}" data-filter-type="category">
+            All Jewellery
+          </a>
+          {% for cat in categories %}
+          <a href="{{ url_for('shop', category=cat.slug, sort=sort, min_price=min_price, max_price=max_price) }}"
+             class="filter-option {% if category == cat.slug %}active{% endif %}" data-filter-type="category">
+            {{ cat.name }}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="filter-card">
+        <p class="filter-title">Price Range</p>
+        <form id="price-filter-form">
+          {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+          <input type="hidden" name="sort" value="{{ sort }}">
+          <div class="price-inputs">
+            <div class="price-input-wrap">
+              <span class="price-currency">₹</span>
+              <input type="number" id="min-price" name="min_price" placeholder="Min"
+                     value="{{ min_price }}" min="0">
+            </div>
+            <div class="price-input-wrap">
+              <span class="price-currency">₹</span>
+              <input type="number" id="max-price" name="max_price" placeholder="Max"
+                     value="{{ max_price }}" min="0">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-outline btn-sm btn-full" style="margin-top:1rem;">Apply Filter</button>
+          {% if min_price or max_price %}
+          <a href="{{ url_for('shop', category=category, sort=sort) }}" class="btn btn-ghost btn-sm btn-full" style="margin-top:.5rem;font-size:.65rem;">Clear Price Filter</a>
+          {% endif %}
+        </form>
+      </div>
+
+      <div class="filter-card">
+        <p class="filter-title">Quick Filters</p>
+        <div class="filter-options">
+          <a href="{{ url_for('shop', category=category, sort='newest') }}" class="filter-option {% if sort=='newest' %}active{% endif %}">New Arrivals</a>
+          <a href="{{ url_for('shop', category=category, sort='price_asc') }}" class="filter-option {% if sort=='price_asc' %}active{% endif %}">Price: Low to High</a>
+          <a href="{{ url_for('shop', category=category, sort='price_desc') }}" class="filter-option {% if sort=='price_desc' %}active{% endif %}">Price: High to Low</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Products -->
+    <div>
+      <div class="shop-toolbar">
+        <p class="shop-count">
+          Showing <strong style="color:var(--ivory);">{{ products|length }}</strong> of <strong style="color:var(--ivory);">{{ total }}</strong> products
+          {% if category %} in <em style="color:var(--gold);">{{ category.title() }}</em>{% endif %}
+        </p>
+        <select class="sort-select" id="sort-select">
+          <option value="newest" {% if sort=='newest' %}selected{% endif %}>Newest First</option>
+          <option value="price_asc" {% if sort=='price_asc' %}selected{% endif %}>Price: Low to High</option>
+          <option value="price_desc" {% if sort=='price_desc' %}selected{% endif %}>Price: High to Low</option>
+          <option value="name" {% if sort=='name' %}selected{% endif %}>Name A–Z</option>
+        </select>
+      </div>
+
+      {% if products %}
+      <div class="products-grid">
+        {% for p in products %}
+        {% set price = p.sale_price if p.sale_price else p.price %}
+        <div class="product-card">
+          <div class="product-image-wrap">
+            {% if p.image %}
+              <img class="product-img" src="{{ img_url(p.image) }}" alt="{{ p.name }}" loading="lazy">
+            {% else %}
+              <div class="product-image-placeholder">
+                <span class="jewel-icon">💎</span>
+                <span class="jewel-label">{{ p.category_name or 'Jewellery' }}</span>
+              </div>
+            {% endif %}
+            <div class="product-badges">
+              {% if p.sale_price %}<span class="badge badge-sale">Sale</span>{% endif %}
+              {% if p.stock < 5 and p.stock > 0 %}<span class="badge badge-low">Only {{ p.stock }} left</span>{% endif %}
+              {% if p.stock == 0 %}<span class="badge badge-out">Sold Out</span>{% endif %}
+            </div>
+            <div class="product-actions">
+              <a href="{{ url_for('product_detail', slug=p.slug) }}" class="btn btn-gold btn-sm" style="flex:1;justify-content:center;">View Details</a>
+              {% if session.get('user_id') %}
+              <button class="wishlist-btn {% if p.id in wishlist_ids %}active{% endif %}"
+                      data-product-id="{{ p.id }}" title="Wishlist">
+                {{ '♥' if p.id in wishlist_ids else '♡' }}
+              </button>
+              {% endif %}
+            </div>
+          </div>
+          <div class="product-info">
+            <p class="product-category">{{ p.category_name or 'Fine Jewellery' }}</p>
+            <h3 class="product-name"><a href="{{ url_for('product_detail', slug=p.slug) }}">{{ p.name }}</a></h3>
+            <div class="product-price-wrap">
+              <span class="product-price">₹{{ '{:,.0f}'.format(price) }}</span>
+              {% if p.sale_price %}<span class="product-price-original">₹{{ '{:,.0f}'.format(p.price) }}</span>{% endif %}
+            </div>
+            {% if p.material %}<p class="product-material">{{ p.material }}</p>{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Pagination -->
+      {% if total_pages > 1 %}
+      <div class="pagination">
+        {% if page > 1 %}
+        <a href="{{ url_for('shop', page=page-1, category=category, sort=sort, min_price=min_price, max_price=max_price) }}" class="page-btn">‹</a>
+        {% else %}
+        <span class="page-btn disabled">‹</span>
+        {% endif %}
+
+        {% for p_num in range(1, total_pages+1) %}
+          {% if p_num == page %}
+            <span class="page-btn active">{{ p_num }}</span>
+          {% elif p_num == 1 or p_num == total_pages or (p_num >= page-2 and p_num <= page+2) %}
+            <a href="{{ url_for('shop', page=p_num, category=category, sort=sort, min_price=min_price, max_price=max_price) }}" class="page-btn">{{ p_num }}</a>
+          {% elif p_num == page-3 or p_num == page+3 %}
+            <span class="page-btn disabled" style="border:none;width:20px;">…</span>
+          {% endif %}
+        {% endfor %}
+
+        {% if page < total_pages %}
+        <a href="{{ url_for('shop', page=page+1, category=category, sort=sort, min_price=min_price, max_price=max_price) }}" class="page-btn">›</a>
+        {% else %}
+        <span class="page-btn disabled">›</span>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">💎</div>
+        <h2 class="empty-title">No Products Found</h2>
+        <p class="empty-text">Try adjusting your filters or browse our full collection.</p>
+        <a href="{{ url_for('shop') }}" class="btn btn-gold">View All Jewellery</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

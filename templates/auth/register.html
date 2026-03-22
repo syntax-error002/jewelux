@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Create Account — JEWELUX{% endblock %}
+{% block show_footer %}{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">JEWELUX</div>
+    <p class="auth-subtitle">✦ Join Our Exclusive Circle ✦</p>
+    <div class="gold-divider" style="margin-bottom:2rem;"><div class="diamond"></div></div>
+
+    <form method="POST" action="{{ url_for('register') }}">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" name="full_name" class="form-control" placeholder="Your full name" required autofocus>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" name="email" class="form-control" placeholder="your@email.com" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" placeholder="Min. 8 characters" required minlength="8">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <input type="password" name="confirm_password" class="form-control" placeholder="Repeat password" required>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-gold btn-full btn-lg">
+        <i class="fas fa-user-plus"></i> Create Account
+      </button>
+    </form>
+
+    <p class="auth-switch">
+      Already have an account? <a href="{{ url_for('login') }}">Sign in</a>
+    </p>
+    <p class="auth-switch" style="margin-top:.5rem;">
+      <a href="{{ url_for('index') }}" style="color:var(--gray-dim);font-size:.8rem;">← Back to Home</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

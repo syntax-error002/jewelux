@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}Your Cart — JEWELUX{% endblock %}
+{% block header_class %}solid{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--header-h) + 2rem);padding-bottom:5rem;">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="{{ url_for('index') }}">Home</a>
+      <span class="breadcrumb-sep">✦</span>
+      <span class="breadcrumb-current">Shopping Cart</span>
+    </div>
+
+    <div style="margin-bottom:2rem;">
+      <p class="section-label">Your Selection</p>
+      <h1 style="font-family:var(--font-serif);font-size:2.5rem;">Shopping <em style="font-style:italic;color:var(--gold);">Cart</em></h1>
+    </div>
+
+    {% if items %}
+    <div class="cart-grid">
+      <!-- Items -->
+      <div>
+        {% for item in items %}
+        {% set price = item.sale_price if item.sale_price else item.price %}
+        <div class="cart-item" id="cart-row-{{ item.id }}">
+          <!-- Image -->
+          {% if item.image and not item.image.startswith('placeholder') %}
+            <img class="cart-item-img" src="{{ img_url(item.image) }}" alt="{{ item.name }}">
+          {% else %}
+            <div class="cart-item-img" style="background:var(--black-mid);display:flex;align-items:center;justify-content:center;font-size:2rem;border-radius:4px;">💎</div>
+          {% endif %}
+
+          <!-- Details -->
+          <div>
+            <a href="{{ url_for('product_detail', slug=item.slug) }}" class="cart-item-name">{{ item.name }}</a>
+            <p class="cart-item-price" style="margin-top:.2rem;">₹{{ '{:,.2f}'.format(price) }} each</p>
+            <div class="cart-qty-controls">
+              <button class="cart-qty-btn" data-cart-id="{{ item.id }}" data-action="dec">−</button>
+              <span class="cart-qty-display" id="qty-{{ item.id }}">{{ item.quantity }}</span>
+              <button class="cart-qty-btn" data-cart-id="{{ item.id }}" data-action="inc">+</button>
+              <span style="font-size:.72rem;color:var(--gray-dim);">Stock: {{ item.stock }}</span>
+            </div>
+            <a class="cart-remove" data-cart-id="{{ item.id }}">Remove item</a>
+          </div>
+
+          <!-- Item total -->
+          <div>
+            <div class="cart-item-total" id="item-total-{{ item.id }}">₹{{ '{:,.2f}'.format(price * item.quantity) }}</div>
+          </div>
+        </div>
+        {% endfor %}
+
+        <div style="margin-top:1.5rem;display:flex;gap:1rem;flex-wrap:wrap;">
+          <a href="{{ url_for('shop') }}" class="btn btn-ghost btn-sm">
+            ← Continue Shopping
+          </a>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="cart-summary">
+        <h2 class="cart-summary-title">Order Summary</h2>
+        <div class="summary-row">
+          <span class="summary-label">Subtotal</span>
+          <span id="cart-subtotal">₹{{ '{:,.2f}'.format(subtotal) }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Shipping</span>
+          <span id="cart-shipping" style="color:{% if shipping == 0 %}var(--green){% else %}var(--ivory){% endif %}">
+            {% if shipping == 0 %}FREE{% else %}₹{{ '{:,.2f}'.format(shipping) }}{% endif %}
+          </span>
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <span id="cart-total">₹{{ '{:,.2f}'.format(total) }}</span>
+        </div>
+        {% if shipping > 0 %}
+        <p class="free-shipping" style="margin-top:.5rem;font-size:.75rem;">
+          ₹{{ '{:,.0f}'.format(10000 - subtotal) }} more for free shipping
+        </p>
+        {% else %}
+        <p class="free-shipping">✓ You qualify for free shipping!</p>
+        {% endif %}
+
+        <a href="{{ url_for('checkout') }}" class="btn btn-gold btn-full btn-lg" style="margin-top:1.5rem;">
+          Proceed to Checkout →
+        </a>
+
+        <div style="margin-top:1.5rem;display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;">
+          {% for icon, label in [('💳','Secure'),('🔒','Encrypted'),('✓','Trusted')] %}
+          <div style="display:flex;align-items:center;gap:.4rem;font-size:.7rem;color:var(--gray-dim);">
+            <span>{{ icon }}</span><span>{{ label }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🛍</div>
+      <h2 class="empty-title">Your Cart is Empty</h2>
+      <p class="empty-text">Discover our exquisite collection and add your favourite pieces.</p>
+      <a href="{{ url_for('shop') }}" class="btn btn-gold btn-lg">Explore Jewellery</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

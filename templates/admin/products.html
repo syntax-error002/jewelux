@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}Products — Admin — JEWELUX{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+  <div class="container-fluid">
+    <div class="admin-layout">
+
+      <aside class="admin-sidebar">
+        <div class="admin-brand"><span class="brand-mark">◈</span><span>Admin Panel</span></div>
+        <nav class="admin-nav">
+          <a href="{{ url_for('admin_index') }}"><span>◈</span> Dashboard</a>
+          <a href="{{ url_for('admin_products') }}" class="active"><span>◎</span> Products</a>
+          <a href="{{ url_for('admin_orders') }}"><span>◉</span> Orders</a>
+          <a href="{{ url_for('admin_users') }}"><span>◎</span> Users</a>
+          <hr class="nav-divider">
+          <a href="{{ url_for('index') }}"><span>↗</span> View Store</a>
+          <a href="{{ url_for('logout') }}" class="logout-link"><span>→</span> Sign Out</a>
+        </nav>
+      </aside>
+
+      <main class="admin-main">
+        <div class="admin-topbar">
+          <div>
+            <h1>Products</h1>
+            <p>{{ products.total }} products in catalogue</p>
+          </div>
+          <a href="{{ url_for('admin_add_product') }}" class="btn btn-primary btn-sm">+ Add Product</a>
+        </div>
+
+        <!-- Filters -->
+        <form method="GET" class="admin-filters">
+          <input type="text" name="q" value="{{ request.args.get('q', '') }}" placeholder="Search products…" class="form-control filter-search">
+          <select name="category" class="form-control filter-select" onchange="this.form.submit()">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if request.args.get('category') == cat.id|string %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+          {% if request.args.get('q') or request.args.get('category') %}
+          <a href="{{ url_for('admin_products') }}" class="btn btn-ghost btn-sm">Clear</a>
+          {% endif %}
+        </form>
+
+        <div class="admin-card">
+          <div class="table-wrap">
+            <table class="admin-table products-table">
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Product</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Stock</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for product in products.items %}
+                <tr>
+                  <td class="product-thumb-cell">
+                    {% if product.image %}
+                      <img src="{{ img_url(product.image) }}" alt="" class="product-thumb">
+                    {% else %}
+                      <div class="thumb-placeholder">◈</div>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <strong>{{ product.name }}</strong>
+                    <br>
+                    <small class="text-muted">{{ product.material or '' }}</small>
+                  </td>
+                  <td>{{ product.category_name or '—' }}</td>
+                  <td>
+                    ₹{{ '{:,.0f}'.format(product.price) }}
+                    {% if product.original_price and product.original_price > product.price %}
+                      <br><small class="text-muted line-through">₹{{ '{:,.0f}'.format(product.original_price) }}</small>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <span class="stock-badge {% if product.stock == 0 %}out{% elif product.stock <= 5 %}low{% else %}ok{% endif %}">
+                      {{ product.stock }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="status-pill {% if product.is_active %}pill-active{% else %}pill-inactive{% endif %}">
+                      {{ 'Active' if product.is_active else 'Hidden' }}
+                    </span>
+                  </td>
+                  <td class="actions-cell">
+                    <a href="{{ url_for('admin_edit_product', product_id=product.id) }}" class="btn-icon" title="Edit">✎</a>
+                    <button class="btn-icon btn-danger" onclick="confirmDelete({{ product.id }}, '{{ product.name }}')" title="Delete">✕</button>
+                  </td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="7" class="empty-cell">No products found.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          {% if products.pages > 1 %}
+          <div class="pagination admin-pagination">
+            {% if products.has_prev %}
+              <a href="{{ url_for('admin_products', page=products.prev_num, q=request.args.get('q',''), category=request.args.get('category','')) }}" class="page-btn">← Prev</a>
+            {% endif %}
+            {% for p in products.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+              {% if p %}
+                <a href="{{ url_for('admin_products', page=p, q=request.args.get('q',''), category=request.args.get('category','')) }}" class="page-btn {% if p == products.page %}active{% endif %}">{{ p }}</a>
+              {% else %}
+                <span class="page-ellipsis">…</span>
+              {% endif %}
+            {% endfor %}
+            {% if products.has_next %}
+              <a href="{{ url_for('admin_products', page=products.next_num, q=request.args.get('q',''), category=request.args.get('category','')) }}" class="page-btn">Next →</a>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- Delete confirmation modal -->
+<div id="deleteModal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <h3>Delete Product?</h3>
+    <p id="deleteModalMsg"></p>
+    <div class="modal-actions">
+      <button onclick="document.getElementById('deleteModal').style.display='none'" class="btn btn-ghost">Cancel</button>
+      <form id="deleteForm" method="POST">
+        <input type="hidden" name="_method" value="DELETE">
+        <button type="submit" class="btn btn-danger">Delete</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function confirmDelete(id, name) {
+  document.getElementById('deleteModalMsg').textContent = `Are you sure you want to delete "${name}"? This cannot be undone.`;
+  document.getElementById('deleteForm').action = `/admin/products/${id}/delete`;
+  document.getElementById('deleteModal').style.display = 'flex';
+}
+</script>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Order {{ order.order_number }} — JEWELUX{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+  <div class="container">
+    <div class="dashboard-layout">
+
+      <!-- Sidebar -->
+      <aside class="dashboard-sidebar">
+        <div class="sidebar-profile">
+          <div class="profile-avatar">{{ session.user_name[0].upper() }}</div>
+          <div class="profile-info">
+            <h3>{{ session.user_name }}</h3>
+            <span>Member</span>
+          </div>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="{{ url_for('dashboard') }}"><i class="icon">◈</i> Overview</a>
+          <a href="{{ url_for('my_orders') }}" class="active"><i class="icon">◉</i> My Orders</a>
+          <a href="{{ url_for('wishlist') }}"><i class="icon">♡</i> Wishlist</a>
+          <a href="{{ url_for('profile') }}"><i class="icon">◎</i> Profile</a>
+          <a href="{{ url_for('logout') }}" class="logout-link"><i class="icon">→</i> Sign Out</a>
+        </nav>
+      </aside>
+
+      <!-- Main -->
+      <main class="dashboard-main">
+        <div class="dashboard-header">
+          <div>
+            <a href="{{ url_for('my_orders') }}" class="back-link">← Back to Orders</a>
+            <h1>Order #{{ order.order_number }}</h1>
+            <p>Placed on {{ order.created_at.strftime('%d %B %Y at %I:%M %p') }}</p>
+          </div>
+          <span class="status-badge status-{{ order.status }}">{{ order.status.replace('_', ' ').title() }}</span>
+        </div>
+
+        <div class="order-detail-grid">
+          <!-- Items -->
+          <div class="order-items-card card">
+            <h2>Items Ordered</h2>
+            <div class="order-items-list">
+              {% for item in items %}
+              <div class="order-item">
+                <div class="order-item-img">
+                  {% if item.image %}
+                    <img src="{{ img_url(item.image) }}" alt="{{ item.product_name }}">
+                  {% else %}
+                    <div class="img-placeholder">◈</div>
+                  {% endif %}
+                </div>
+                <div class="order-item-info">
+                  <h4>{{ item.product_name }}</h4>
+                  <p class="item-meta">Qty: {{ item.quantity }}</p>
+                </div>
+                <div class="order-item-price">
+                  <span class="unit-price">₹{{ '{:,.0f}'.format(item.unit_price) }} each</span>
+                  <strong>₹{{ '{:,.0f}'.format(item.unit_price * item.quantity) }}</strong>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Sidebar Info -->
+          <div class="order-sidebar-info">
+            <!-- Summary -->
+            <div class="card order-summary-card">
+              <h2>Order Summary</h2>
+              <div class="summary-lines">
+                <div class="summary-line">
+                  <span>Subtotal</span>
+                  <span>₹{{ '{:,.0f}'.format(order.subtotal) }}</span>
+                </div>
+                <div class="summary-line">
+                  <span>Shipping</span>
+                  <span>{% if order.shipping_amount == 0 %}Free{% else %}₹{{ '{:,.0f}'.format(order.shipping_amount) }}{% endif %}</span>
+                </div>
+                <div class="summary-line">
+                  <span>Tax (GST 3%)</span>
+                  <span>₹{{ '{:,.0f}'.format(order.tax_amount) }}</span>
+                </div>
+                <div class="summary-line total-line">
+                  <span>Total Paid</span>
+                  <strong>₹{{ '{:,.0f}'.format(order.total_amount) }}</strong>
+                </div>
+              </div>
+              <div class="payment-method-badge">
+                <span>Payment:</span>
+                <strong>{{ order.payment_method.replace('_', ' ').title() }}</strong>
+              </div>
+            </div>
+
+            <!-- Shipping Address -->
+            <div class="card shipping-card">
+              <h2>Shipping Address</h2>
+              <address>
+                <strong>{{ order.shipping_name }}</strong><br>
+                {{ order.shipping_address }}<br>
+                {{ order.shipping_city }}, {{ order.shipping_state }} — {{ order.shipping_pincode }}<br>
+                {{ order.shipping_phone }}
+              </address>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+</section>
+{% endblock %}

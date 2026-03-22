@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}My Profile — JEWELUX{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+  <div class="container">
+    <div class="dashboard-layout">
+
+      <!-- Sidebar -->
+      <aside class="dashboard-sidebar">
+        <div class="sidebar-profile">
+          <div class="profile-avatar">{{ user.name[0].upper() }}</div>
+          <div class="profile-info">
+            <h3>{{ user.name }}</h3>
+            <span>Member since {{ user.created_at.strftime('%b %Y') }}</span>
+          </div>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="{{ url_for('dashboard') }}"><i class="icon">◈</i> Overview</a>
+          <a href="{{ url_for('my_orders') }}"><i class="icon">◉</i> My Orders</a>
+          <a href="{{ url_for('wishlist') }}"><i class="icon">♡</i> Wishlist</a>
+          <a href="{{ url_for('profile') }}" class="active"><i class="icon">◎</i> Profile</a>
+          <a href="{{ url_for('logout') }}" class="logout-link"><i class="icon">→</i> Sign Out</a>
+        </nav>
+      </aside>
+
+      <!-- Main -->
+      <main class="dashboard-main">
+        <div class="dashboard-header">
+          <h1>My Profile</h1>
+          <p>Manage your personal information and password</p>
+        </div>
+
+        <div class="profile-forms-grid">
+
+          <!-- Personal Info Form -->
+          <div class="card profile-card">
+            <h2>Personal Information</h2>
+            <form method="POST" action="{{ url_for('profile') }}">
+              <input type="hidden" name="action" value="update_profile">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="name" value="{{ user.name }}" required class="form-control">
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" value="{{ user.email }}" required class="form-control">
+              </div>
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" name="phone" value="{{ user.phone or '' }}" class="form-control" placeholder="+91 00000 00000">
+              </div>
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+            </form>
+          </div>
+
+          <!-- Password Change Form -->
+          <div class="card profile-card">
+            <h2>Change Password</h2>
+            <form method="POST" action="{{ url_for('profile') }}">
+              <input type="hidden" name="action" value="change_password">
+              <div class="form-group">
+                <label>Current Password</label>
+                <input type="password" name="current_password" required class="form-control">
+              </div>
+              <div class="form-group">
+                <label>New Password</label>
+                <input type="password" name="new_password" required class="form-control" minlength="8">
+              </div>
+              <div class="form-group">
+                <label>Confirm New Password</label>
+                <input type="password" name="confirm_password" required class="form-control" minlength="8">
+              </div>
+              <button type="submit" class="btn btn-primary">Update Password</button>
+            </form>
+          </div>
+
+        </div>
+
+        <!-- Account Info Strip -->
+        <div class="card account-info-strip">
+          <div class="info-item">
+            <span class="info-label">Account Status</span>
+            <span class="info-value status-active">● Active</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Member Since</span>
+            <span class="info-value">{{ user.created_at.strftime('%d %B %Y') }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Account Type</span>
+            <span class="info-value">{{ 'Administrator' if user.is_admin else 'Member' }}</span>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+</section>
+{% endblock %}

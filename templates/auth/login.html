@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Login — JEWELUX{% endblock %}
+{% block show_footer %}{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">JEWELUX</div>
+    <p class="auth-subtitle">✦ Welcome Back ✦</p>
+
+    <div class="gold-divider" style="margin-bottom:2rem;"><div class="diamond"></div></div>
+
+    <form method="POST" action="{{ url_for('login') }}">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" name="email" class="form-control" placeholder="your@email.com" required autofocus>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-gold btn-full btn-lg">
+        <i class="fas fa-sign-in-alt"></i> Sign In
+      </button>
+    </form>
+
+    <p class="auth-switch">
+      New to JEWELUX? <a href="{{ url_for('register') }}">Create an account</a>
+    </p>
+    <p class="auth-switch" style="margin-top:.5rem;">
+      <a href="{{ url_for('index') }}" style="color:var(--gray-dim);font-size:.8rem;">← Back to Home</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

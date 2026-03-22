@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard — JEWELUX{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+  <div class="container-fluid">
+    <div class="admin-layout">
+
+      <!-- Admin Sidebar -->
+      <aside class="admin-sidebar">
+        <div class="admin-brand">
+          <span class="brand-mark">◈</span>
+          <span>Admin Panel</span>
+        </div>
+        <nav class="admin-nav">
+          <a href="{{ url_for('admin_index') }}" class="active"><span>◈</span> Dashboard</a>
+          <a href="{{ url_for('admin_products') }}"><span>◎</span> Products</a>
+          <a href="{{ url_for('admin_orders') }}"><span>◉</span> Orders</a>
+          <a href="{{ url_for('admin_users') }}"><span>◎</span> Users</a>
+          <hr class="nav-divider">
+          <a href="{{ url_for('index') }}"><span>↗</span> View Store</a>
+          <a href="{{ url_for('logout') }}" class="logout-link"><span>→</span> Sign Out</a>
+        </nav>
+      </aside>
+
+      <!-- Admin Main -->
+      <main class="admin-main">
+        <div class="admin-topbar">
+          <div>
+            <h1>Dashboard</h1>
+            <p>Welcome back, {{ session.user_name }}</p>
+          </div>
+          <a href="{{ url_for('admin_add_product') }}" class="btn btn-primary btn-sm">+ Add Product</a>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="admin-stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon gold">₹</div>
+            <div class="stat-body">
+              <span class="stat-label">Total Revenue</span>
+              <h2>₹{{ '{:,.0f}'.format(stats.revenue or 0) }}</h2>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">◉</div>
+            <div class="stat-body">
+              <span class="stat-label">Total Orders</span>
+              <h2>{{ stats.orders or 0 }}</h2>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">◎</div>
+            <div class="stat-body">
+              <span class="stat-label">Products</span>
+              <h2>{{ stats.products or 0 }}</h2>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">◈</div>
+            <div class="stat-body">
+              <span class="stat-label">Customers</span>
+              <h2>{{ stats.customers or 0 }}</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-content-grid">
+
+          <!-- Recent Orders -->
+          <div class="admin-card">
+            <div class="card-header">
+              <h2>Recent Orders</h2>
+              <a href="{{ url_for('admin_orders') }}" class="view-all">View All →</a>
+            </div>
+            <div class="table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Order #</th>
+                    <th>Customer</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for order in recent_orders %}
+                  <tr>
+                    <td><code>{{ order.order_number }}</code></td>
+                    <td>{{ order.customer_name }}</td>
+                    <td>₹{{ '{:,.0f}'.format(order.total_amount) }}</td>
+                    <td><span class="status-badge status-{{ order.status }}">{{ order.status.replace('_',' ').title() }}</span></td>
+                    <td><a href="{{ url_for('admin_order_detail', order_id=order.id) }}" class="btn-link">View</a></td>
+                  </tr>
+                  {% else %}
+                  <tr><td colspan="5" class="empty-cell">No orders yet.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Low Stock -->
+          <div class="admin-card">
+            <div class="card-header">
+              <h2>Low Stock Alert</h2>
+              <a href="{{ url_for('admin_products') }}" class="view-all">Manage →</a>
+            </div>
+            <div class="table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Stock</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for product in low_stock %}
+                  <tr>
+                    <td>{{ product.name }}</td>
+                    <td>
+                      <span class="stock-badge {% if product.stock == 0 %}out{% else %}low{% endif %}">
+                        {{ product.stock }} left
+                      </span>
+                    </td>
+                    <td><a href="{{ url_for('admin_edit_product', product_id=product.id) }}" class="btn-link">Edit</a></td>
+                  </tr>
+                  {% else %}
+                  <tr><td colspan="3" class="empty-cell">All products well-stocked.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+{% endblock %}

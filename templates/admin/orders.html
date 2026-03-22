@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Orders — Admin — JEWELUX{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+  <div class="container-fluid">
+    <div class="admin-layout">
+
+      <aside class="admin-sidebar">
+        <div class="admin-brand"><span class="brand-mark">◈</span><span>Admin Panel</span></div>
+        <nav class="admin-nav">
+          <a href="{{ url_for('admin_index') }}"><span>◈</span> Dashboard</a>
+          <a href="{{ url_for('admin_products') }}"><span>◎</span> Products</a>
+          <a href="{{ url_for('admin_orders') }}" class="active"><span>◉</span> Orders</a>
+          <a href="{{ url_for('admin_users') }}"><span>◎</span> Users</a>
+          <hr class="nav-divider">
+          <a href="{{ url_for('index') }}"><span>↗</span> View Store</a>
+          <a href="{{ url_for('logout') }}" class="logout-link"><span>→</span> Sign Out</a>
+        </nav>
+      </aside>
+
+      <main class="admin-main">
+        <div class="admin-topbar">
+          <div>
+            <h1>Orders</h1>
+            <p>{{ orders.total }} total orders</p>
+          </div>
+        </div>
+
+        <!-- Status Filter Tabs -->
+        <div class="status-tabs">
+          {% set statuses = ['all', 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'] %}
+          {% for s in statuses %}
+          <a href="{{ url_for('admin_orders', status=s if s != 'all' else '', page=1) }}"
+             class="status-tab {% if (request.args.get('status') or 'all') == s %}active{% endif %}">
+            {{ s.replace('_',' ').title() }}
+          </a>
+          {% endfor %}
+        </div>
+
+        <div class="admin-card">
+          <div class="table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Order #</th>
+                  <th>Customer</th>
+                  <th>Date</th>
+                  <th>Items</th>
+                  <th>Total</th>
+                  <th>Payment</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for order in orders.items %}
+                <tr>
+                  <td><code>{{ order.order_number }}</code></td>
+                  <td>
+                    <strong>{{ order.customer_name }}</strong>
+                    <br><small class="text-muted">{{ order.customer_email }}</small>
+                  </td>
+                  <td>{{ order.created_at.strftime('%d %b %Y') }}</td>
+                  <td>{{ order.item_count }}</td>
+                  <td><strong>₹{{ '{:,.0f}'.format(order.total_amount) }}</strong></td>
+                  <td>
+                    <span class="text-muted">{{ order.payment_method.replace('_',' ').title() }}</span>
+                  </td>
+                  <td>
+                    <span class="status-badge status-{{ order.status }}">{{ order.status.replace('_',' ').title() }}</span>
+                  </td>
+                  <td>
+                    <a href="{{ url_for('admin_order_detail', order_id=order.id) }}" class="btn-link">View →</a>
+                  </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="empty-cell">No orders found.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          {% if orders.pages > 1 %}
+          <div class="pagination admin-pagination">
+            {% if orders.has_prev %}
+              <a href="{{ url_for('admin_orders', page=orders.prev_num, status=request.args.get('status','')) }}" class="page-btn">← Prev</a>
+            {% endif %}
+            {% for p in orders.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+              {% if p %}
+                <a href="{{ url_for('admin_orders', page=p, status=request.args.get('status','')) }}" class="page-btn {% if p == orders.page %}active{% endif %}">{{ p }}</a>
+              {% else %}
+                <span class="page-ellipsis">…</span>
+              {% endif %}
+            {% endfor %}
+            {% if orders.has_next %}
+              <a href="{{ url_for('admin_orders', page=orders.next_num, status=request.args.get('status','')) }}" class="page-btn">Next →</a>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+{% endblock %}

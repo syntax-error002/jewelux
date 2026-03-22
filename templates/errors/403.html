@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Access Denied — JEWELUX{% endblock %}
+{% block content %}
+<section class="error-section">
+  <div class="container">
+    <div class="error-content">
+      <div class="error-symbol">◉</div>
+      <h1 class="error-code">403</h1>
+      <h2>Access Denied</h2>
+      <p>You do not have permission to access this page. If you believe this is an error, please contact our support team.</p>
+      <div class="error-actions">
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Return Home</a>
+        <a href="{{ url_for('login') }}" class="btn btn-secondary">Sign In</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

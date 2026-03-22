@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{% block meta_desc %}JEWELUX — Exquisite Luxury Jewellery. Diamonds, gold, and precious gemstones crafted for the discerning.{% endblock %}">
+  <title>{% block title %}JEWELUX — Luxury Jewellery{% endblock %}</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Josefin+Sans:wght@200;300;400;600&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ═══ FLASH MESSAGES ═══ -->
+<div class="flash-container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash flash-{{ category }}">
+        <span>{{ message }}</span>
+        <button class="flash-close" type="button">✕</button>
+      </div>
+    {% endfor %}
+  {% endwith %}
+</div>
+
+<!-- ═══ SEARCH OVERLAY ═══ -->
+<div class="search-input-wrap" id="search-wrap">
+  <i class="fas fa-search" style="color:var(--gold);font-size:1.1rem;"></i>
+  <input type="text" id="search-input" placeholder="Search jewellery, categories..." autocomplete="off">
+  <button id="search-close" style="background:none;color:var(--gray-dim);font-size:1.2rem;">✕</button>
+</div>
+<div class="search-results-dropdown" id="search-dropdown"></div>
+
+<!-- ═══ HEADER ═══ -->
+<header class="header {% block header_class %}{% endblock %}" id="main-header">
+  <nav class="nav">
+    <!-- Logo -->
+    <a href="{{ url_for('index') }}" class="nav-logo">
+      JEWEL<span>UX</span>
+    </a>
+
+    <!-- Desktop nav -->
+    <ul class="nav-links">
+      <li><a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}">Home</a></li>
+      <li><a href="{{ url_for('shop') }}" class="{% if request.endpoint == 'shop' %}active{% endif %}">Shop</a></li>
+      {% for cat in categories[:5] %}
+      <li><a href="{{ url_for('shop', category=cat.slug) }}">{{ cat.name }}</a></li>
+      {% endfor %}
+    </ul>
+
+    <!-- Actions -->
+    <div class="nav-actions">
+      <button class="nav-icon-btn" id="search-open" title="Search">
+        <i class="fas fa-search"></i>
+      </button>
+
+      {% if session.get('user_id') %}
+        <a href="{{ url_for('wishlist') }}" class="nav-icon-btn" title="Wishlist">
+          <i class="fas fa-heart"></i>
+        </a>
+        <a href="{{ url_for('cart') }}" class="nav-icon-btn" title="Cart">
+          <i class="fas fa-shopping-bag"></i>
+          {% set count = get_cart_count() %}
+          <span class="nav-badge cart-badge" {% if count == 0 %}style="display:none"{% endif %}>{{ count }}</span>
+        </a>
+        <div class="nav-user">
+          <i class="fas fa-user-circle"></i>
+          <span>{{ session.user_name.split()[0] }}</span>
+          <div class="nav-user-menu">
+            <a href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt" style="width:14px;"></i> Dashboard</a>
+            <a href="{{ url_for('my_orders') }}"><i class="fas fa-box" style="width:14px;"></i> My Orders</a>
+            <a href="{{ url_for('wishlist') }}"><i class="fas fa-heart" style="width:14px;"></i> Wishlist</a>
+            <a href="{{ url_for('profile') }}"><i class="fas fa-cog" style="width:14px;"></i> Profile</a>
+            {% if session.get('is_admin') %}
+            <a href="{{ url_for('admin_index') }}" style="color:var(--gold);"><i class="fas fa-lock" style="width:14px;"></i> Admin</a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}" style="color:var(--red);"><i class="fas fa-sign-out-alt" style="width:14px;"></i> Logout</a>
+          </div>
+        </div>
+      {% else %}
+        <a href="{{ url_for('cart') }}" class="nav-icon-btn" title="Cart">
+          <i class="fas fa-shopping-bag"></i>
+          <span class="nav-badge cart-badge" style="display:none">0</span>
+        </a>
+        <a href="{{ url_for('login') }}" class="btn btn-outline btn-sm">Login</a>
+      {% endif %}
+
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobile-menu">
+  <a href="{{ url_for('index') }}">Home</a>
+  <a href="{{ url_for('shop') }}">Shop All</a>
+  {% for cat in categories %}
+  <a href="{{ url_for('shop', category=cat.slug) }}">{{ cat.name }}</a>
+  {% endfor %}
+  {% if session.get('user_id') %}
+    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('my_orders') }}">My Orders</a>
+    <a href="{{ url_for('wishlist') }}">Wishlist</a>
+    <a href="{{ url_for('cart') }}">Cart</a>
+    {% if session.get('is_admin') %}
+      <a href="{{ url_for('admin_index') }}" style="color:var(--gold);">Admin Panel</a>
+    {% endif %}
+    <a href="{{ url_for('logout') }}" style="color:var(--red);">Logout</a>
+  {% else %}
+    <a href="{{ url_for('login') }}">Login</a>
+    <a href="{{ url_for('register') }}">Register</a>
+  {% endif %}
+</div>
+
+<!-- ═══ MAIN CONTENT ═══ -->
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ═══ FOOTER ═══ -->
+{% block show_footer %}
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo">JEWELUX</div>
+        <p class="footer-tagline">Crafting timeless luxury since generations. Each piece tells a story of artistry, heritage, and enduring beauty.</p>
+        <div style="margin-top:1.5rem;display:flex;gap:.5rem;flex-wrap:wrap;">
+          <span style="font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,168,76,.3);padding:.35rem .75rem;border-radius:2px;">BIS Hallmarked</span>
+          <span style="font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,168,76,.3);padding:.35rem .75rem;border-radius:2px;">Certified Gems</span>
+          <span style="font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,168,76,.3);padding:.35rem .75rem;border-radius:2px;">Free Shipping ₹10k+</span>
+        </div>
+      </div>
+      <div>
+        <p class="footer-col-title">Shop</p>
+        <ul class="footer-links">
+          {% for cat in categories %}
+          <li><a href="{{ url_for('shop', category=cat.slug) }}">{{ cat.name }}</a></li>
+          {% endfor %}
+          <li><a href="{{ url_for('shop') }}">All Jewellery</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="footer-col-title">Account</p>
+        <ul class="footer-links">
+          <li><a href="{{ url_for('login') }}">Login</a></li>
+          <li><a href="{{ url_for('register') }}">Register</a></li>
+          <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+          <li><a href="{{ url_for('my_orders') }}">My Orders</a></li>
+          <li><a href="{{ url_for('wishlist') }}">Wishlist</a></li>
+          <li><a href="{{ url_for('cart') }}">Cart</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="footer-col-title">Contact</p>
+        <ul class="footer-links">
+          <li><a href="mailto:hello@jewelux.com">hello@jewelux.com</a></li>
+          <li><a href="tel:+919999999999">+91 99999 99999</a></li>
+          <li><a href="#">Mumbai, Maharashtra</a></li>
+          <li><a href="#">Care & Maintenance</a></li>
+          <li><a href="#">Return Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© {{ current_year }} JEWELUX. All rights reserved. Crafted with ♥ for luxury lovers.</p>
+      <div class="footer-social">
+        <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" title="Pinterest"><i class="fab fa-pinterest-p"></i></a>
+        <a href="#" title="YouTube"><i class="fab fa-youtube"></i></a>
+      </div>
+    </div>
+  </div>
+</footer>
+{% endblock %}
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

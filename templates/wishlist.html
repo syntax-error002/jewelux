@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}My Wishlist — JEWELUX{% endblock %}
+{% block header_class %}solid{% endblock %}
+
+{% block content %}
+<div style="padding-top:calc(var(--header-h)+2rem);padding-bottom:5rem;">
+  <div class="container">
+    <div style="margin-bottom:2rem;">
+      <p class="section-label">Saved for Later</p>
+      <h1 style="font-family:var(--font-serif);font-size:2.5rem;">My <em style="font-style:italic;color:var(--gold);">Wishlist</em></h1>
+    </div>
+
+    {% if items %}
+    <div class="products-grid">
+      {% for p in items %}
+      {% set price = p.sale_price if p.sale_price else p.price %}
+      <div class="product-card">
+        <div class="product-image-wrap">
+          {% if p.image and not p.image.startswith('placeholder') %}
+            <img class="product-img" src="{{ img_url(p.image) }}" alt="{{ p.name }}" loading="lazy">
+          {% else %}
+            <div class="product-image-placeholder"><span class="jewel-icon">💎</span></div>
+          {% endif %}
+          <div class="product-badges">
+            {% if p.sale_price %}<span class="badge badge-sale">Sale</span>{% endif %}
+          </div>
+          <div class="product-actions">
+            <a href="{{ url_for('product_detail', slug=p.slug) }}" class="btn btn-gold btn-sm" style="flex:1;justify-content:center;">View Details</a>
+            <button class="wishlist-btn active" data-product-id="{{ p.id }}" title="Remove">♥</button>
+          </div>
+        </div>
+        <div class="product-info">
+          <p class="product-category">{{ p.category_name }}</p>
+          <h3 class="product-name"><a href="{{ url_for('product_detail', slug=p.slug) }}">{{ p.name }}</a></h3>
+          <div class="product-price-wrap">
+            <span class="product-price">₹{{ '{:,.0f}'.format(price) }}</span>
+            {% if p.sale_price %}<span class="product-price-original">₹{{ '{:,.0f}'.format(p.price) }}</span>{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">♡</div>
+      <h2 class="empty-title">Your Wishlist is Empty</h2>
+      <p class="empty-text">Save your favourite pieces to your wishlist while you browse.</p>
+      <a href="{{ url_for('shop') }}" class="btn btn-gold">Explore Jewellery</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

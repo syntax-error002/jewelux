@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — JEWELUX{% endblock %}
+{% block header_class %}solid{% endblock %}
+
+{% block content %}
+<div class="container dashboard-layout">
+  <!-- Sidebar -->
+  <aside class="dashboard-sidebar">
+    <div class="sidebar-card">
+      <div class="sidebar-user-info">
+        <div class="sidebar-avatar">{{ user.full_name[0] }}</div>
+        <div class="sidebar-name">{{ user.full_name }}</div>
+        <div class="sidebar-email">{{ user.email }}</div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="{{ url_for('dashboard') }}" class="active"><i class="fas fa-home" style="width:16px;"></i> Overview</a>
+        <a href="{{ url_for('my_orders') }}"><i class="fas fa-box" style="width:16px;"></i> My Orders</a>
+        <a href="{{ url_for('wishlist') }}"><i class="fas fa-heart" style="width:16px;"></i> Wishlist</a>
+        <a href="{{ url_for('cart') }}"><i class="fas fa-shopping-bag" style="width:16px;"></i> Cart</a>
+        <a href="{{ url_for('profile') }}"><i class="fas fa-user" style="width:16px;"></i> Profile</a>
+        {% if session.get('is_admin') %}<a href="{{ url_for('admin_index') }}" style="color:var(--gold);"><i class="fas fa-lock" style="width:16px;"></i> Admin Panel</a>{% endif %}
+        <a href="{{ url_for('logout') }}" style="color:var(--red);"><i class="fas fa-sign-out-alt" style="width:16px;"></i> Logout</a>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main style="padding-bottom:3rem;">
+    <div style="margin-bottom:2rem;">
+      <p class="section-label">Welcome Back</p>
+      <h1 style="font-family:var(--font-serif);font-size:2.2rem;">Hello, <em style="font-style:italic;color:var(--gold);">{{ user.full_name.split()[0] }}</em></h1>
+    </div>
+
+    <div class="stat-cards">
+      <div class="stat-card">
+        <div class="stat-value">{{ order_count }}</div>
+        <div class="stat-label">Total Orders</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ wishlist_count }}</div>
+        <div class="stat-label">Wishlist Items</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ get_cart_count() }}</div>
+        <div class="stat-label">Cart Items</div>
+      </div>
+    </div>
+
+    {% if recent_orders %}
+    <div style="background:var(--black-card);border:1px solid rgba(255,255,255,.06);border-radius:8px;overflow:hidden;">
+      <div style="padding:1.5rem;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;align-items:center;">
+        <h2 style="font-family:var(--font-serif);font-size:1.3rem;">Recent Orders</h2>
+        <a href="{{ url_for('my_orders') }}" class="btn btn-ghost btn-sm">View All</a>
+      </div>
+      <div class="data-table-wrap" style="border:none;border-radius:0;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Date</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in recent_orders %}
+            <tr>
+              <td style="font-family:var(--font-sans);font-size:.8rem;color:var(--ivory);">{{ order.order_number }}</td>
+              <td>{{ order.created_at.strftime('%d %b %Y') if order.created_at else '-' }}</td>
+              <td>{{ order.item_count }}</td>
+              <td style="color:var(--gold);">₹{{ '{:,.2f}'.format(order.total_amount) }}</td>
+              <td><span class="status-pill status-{{ order.status }}">{{ order.status.title() }}</span></td>
+              <td><a href="{{ url_for('order_detail', order_id=order.id) }}" class="btn btn-ghost btn-sm">View</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:3rem;">
+      <div class="empty-icon">📦</div>
+      <h2 class="empty-title">No Orders Yet</h2>
+      <p class="empty-text">Begin your journey with JEWELUX and place your first order.</p>
+      <a href="{{ url_for('shop') }}" class="btn btn-gold">Shop Now</a>
+    </div>
+    {% endif %}
+  </main>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}Order {{ order.order_number }} — Admin — JEWELUX{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+  <div class="container-fluid">
+    <div class="admin-layout">
+
+      <aside class="admin-sidebar">
+        <div class="admin-brand"><span class="brand-mark">◈</span><span>Admin Panel</span></div>
+        <nav class="admin-nav">
+          <a href="{{ url_for('admin_index') }}"><span>◈</span> Dashboard</a>
+          <a href="{{ url_for('admin_products') }}"><span>◎</span> Products</a>
+          <a href="{{ url_for('admin_orders') }}" class="active"><span>◉</span> Orders</a>
+          <a href="{{ url_for('admin_users') }}"><span>◎</span> Users</a>
+          <hr class="nav-divider">
+          <a href="{{ url_for('index') }}"><span>↗</span> View Store</a>
+          <a href="{{ url_for('logout') }}" class="logout-link"><span>→</span> Sign Out</a>
+        </nav>
+      </aside>
+
+      <main class="admin-main">
+        <div class="admin-topbar">
+          <div>
+            <a href="{{ url_for('admin_orders') }}" class="back-link">← Back to Orders</a>
+            <h1>Order #{{ order.order_number }}</h1>
+            <p>{{ order.created_at.strftime('%d %B %Y, %I:%M %p') }}</p>
+          </div>
+          <span class="status-badge status-{{ order.status }} badge-lg">{{ order.status.replace('_',' ').title() }}</span>
+        </div>
+
+        <div class="order-detail-grid">
+
+          <!-- Items -->
+          <div class="order-items-card card admin-card">
+            <h2>Order Items</h2>
+            <div class="order-items-list">
+              {% for item in items %}
+              <div class="order-item">
+                <div class="order-item-img">
+                  {% if item.image %}
+                    <img src="{{ img_url(item.image) }}" alt="{{ item.product_name }}">
+                  {% else %}
+                    <div class="img-placeholder">◈</div>
+                  {% endif %}
+                </div>
+                <div class="order-item-info">
+                  <h4>{{ item.product_name }}</h4>
+                  <p class="item-meta">SKU: {{ item.sku or 'N/A' }} &nbsp;|&nbsp; Qty: {{ item.quantity }}</p>
+                </div>
+                <div class="order-item-price">
+                  <span class="unit-price">₹{{ '{:,.0f}'.format(item.unit_price) }} × {{ item.quantity }}</span>
+                  <strong>₹{{ '{:,.0f}'.format(item.unit_price * item.quantity) }}</strong>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+            <!-- Order Totals -->
+            <div class="order-totals">
+              <div class="total-row"><span>Subtotal</span><span>₹{{ '{:,.0f}'.format(order.subtotal) }}</span></div>
+              <div class="total-row"><span>Shipping</span><span>{% if order.shipping_amount == 0 %}Free{% else %}₹{{ '{:,.0f}'.format(order.shipping_amount) }}{% endif %}</span></div>
+              <div class="total-row"><span>Tax (GST 3%)</span><span>₹{{ '{:,.0f}'.format(order.tax_amount) }}</span></div>
+              <div class="total-row grand-total"><span>Grand Total</span><strong>₹{{ '{:,.0f}'.format(order.total_amount) }}</strong></div>
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="order-sidebar-info">
+
+            <!-- Update Status -->
+            <div class="admin-card">
+              <h2>Update Status</h2>
+              <form method="POST" action="{{ url_for('admin_update_order_status', order_id=order.id) }}">
+                <div class="form-group">
+                  <label>Order Status</label>
+                  <select name="status" class="form-control">
+                    {% for s in ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'] %}
+                    <option value="{{ s }}" {% if order.status == s %}selected{% endif %}>{{ s.replace('_',' ').title() }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Update Status</button>
+              </form>
+            </div>
+
+            <!-- Customer Info -->
+            <div class="admin-card">
+              <h2>Customer</h2>
+              <div class="info-list">
+                <div class="info-row"><span>Name</span><strong>{{ order.customer_name }}</strong></div>
+                <div class="info-row"><span>Email</span><strong>{{ order.customer_email }}</strong></div>
+                <div class="info-row"><span>Payment</span><strong>{{ order.payment_method.replace('_',' ').title() }}</strong></div>
+              </div>
+            </div>
+
+            <!-- Shipping Address -->
+            <div class="admin-card">
+              <h2>Shipping Address</h2>
+              <address>
+                <strong>{{ order.shipping_name }}</strong><br>
+                {{ order.shipping_address }}<br>
+                {{ order.shipping_city }}, {{ order.shipping_state }}<br>
+                PIN: {{ order.shipping_pincode }}<br>
+                <a href="tel:{{ order.shipping_phone }}">{{ order.shipping_phone }}</a>
+              </address>
+            </div>
+
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+{% endblock %}
